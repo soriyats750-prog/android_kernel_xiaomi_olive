@@ -26,18 +26,20 @@ jobs:
         run: |
           # KernelSU অটোমেটিক সেটআপ
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
-
-      - name: Build Kernel
+  
+        - name: Build Kernel
         run: |
-          # এনভায়রনমেন্ট এক্সপোর্ট ও বিল্ড
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
           
-          # মেকফাইল ও কনফিগ প্রিপারেশন
+          # পারমিশন এরর ঠিক করা
+          chmod -R +x scripts/
+          
+          # কনফিগারেশন অটোমেশন
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
           
-          # অটো-প্যাচিং (যদি কোনো কনফিগ এরর থাকে)
-          sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
+          # কনফিগারেশনের সময় কোনো প্রশ্ন না করার জন্য 'yes' কমান্ড ব্যবহার
+          yes "" | make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE oldconfig
           
           # ফাইনাল বিল্ড
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
