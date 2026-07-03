@@ -23,6 +23,6 @@ jobs:
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
           # সরাসরি মূল ডিরেক্টরিতে কনফিগারেশন এবং বিল্ড রান করছি
-          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive_defconfig
+          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
         
