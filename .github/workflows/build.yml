@@ -3,17 +3,22 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
+    # অ্যান্ড্রয়েড কার্নেল বিল্ডের জন্য লিনাক্স রানার বাধ্যতামূলক
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          submodules: recursive # সাব-মডিউল ফাইলগুলো ডাউনলোড করার জন্য এটি বাধ্যতামূলক
+          submodules: recursive
 
       - name: Setup Build Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev
+          
+          # পাইথন ২ এর প্রয়োজনীয়তা মেটানোর জন্য লিঙ্ক তৈরি
           sudo ln -sf /usr/bin/python3 /usr/bin/python
+          sudo ln -sf /usr/bin/python3 /usr/bin/python2
 
       - name: Setup Toolchain
         run: |
@@ -25,14 +30,19 @@ jobs:
 
       - name: Build Kernel
         run: |
+          # এনভায়রনমেন্ট সেটআপ
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
           
-          # সকল স্ক্রিপ্টকে পারমিশন দেওয়া
+          # ফাইল পারমিশন ঠিক করা
           chmod -R +x scripts/
           
-          # কনফিগ তৈরি এবং বিল্ড
+          # কনফিগারেশন জেনারেট করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
           
-          # 'oldconfig' এর পরিবর্তে সরাসরি বিল্ড রান করা
+          # স্ট্যাক প্রটেক্টর এরর (Compile error) দূর করার জন্য কনফিগ প্যাচ
+          sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
+          sed -i 's/CONFIG_CC_STACKPROTECTOR_REGULAR=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
+          
+          # বিল্ড কমান্ড (সব প্রসেসর কোর ব্যবহার করে)
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
