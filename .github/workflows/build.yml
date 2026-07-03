@@ -6,12 +6,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive # এটি খুব গুরুত্বপূর্ণ - সাব-মডিউলগুলো ডাউনলোড করবে
 
       - name: Setup Build Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev
-          # আধুনিক উবুন্টুর জন্য পাইথন ২ এর পরিবর্তে পাইথন ৩ লিঙ্ক করা
+          # পাইথন ২ এর বিকল্প নিশ্চিত করা
           sudo ln -sf /usr/bin/python3 /usr/bin/python
 
       - name: Setup Toolchain
@@ -26,13 +28,11 @@ jobs:
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
-          # পারমিশন এরর ঠিক করা
           chmod -R +x scripts/
-          # কনফিগারেশন তৈরি
-          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
-          # কনফিগ এরর অটো-প্যাচ করা
-          sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
-          # প্রম্পট এড়িয়ে বিল্ড রান করা
-          yes "" | make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE oldconfig
-          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
           
+          # কনফিগারেশন এরর এড়াতে সব ডিফল্ট সিলেক্ট করা
+          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
+          sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
+          
+          # বিল্ড কমান্ড
+          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
