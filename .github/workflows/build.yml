@@ -10,9 +10,14 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git -b lineage-18.1 gcc64
 
-      - name: Setup Build Environment
+            - name: Setup Build Environment
         run: |
-          sudo apt-get update && sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev python-is-python2
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository ppa:deadsnakes/ppa
+          sudo apt-get update
+          sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev python2
+          sudo ln -sf /usr/bin/python2 /usr/bin/python
 
       - name: KernelSU Setup
         run: |
