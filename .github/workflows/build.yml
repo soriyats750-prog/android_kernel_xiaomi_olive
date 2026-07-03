@@ -18,6 +18,7 @@ jobs:
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-android-
-          make olive_defconfig
-          make -j$(nproc)
+          mkdir -p out
+          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- olive_defconfig
+          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc)
           
