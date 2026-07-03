@@ -1,35 +1,44 @@
 name: Build Kernel
-on: [push]
+on: [push, workflow_dispatch]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Toolchain
-        run: |
-          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git -b lineage-18.1 gcc64
-
       - name: Setup Build Environment
         run: |
+          # সব প্রয়োজনীয় প্যাকেজ ইন্সটল
           sudo apt-get update
           sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev
-          # পাইথন ২ এর বিকল্প ব্যবস্থা
-          curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-          sudo python2 get-pip.py
-          sudo ln -sf /usr/bin/python2 /usr/bin/python
+          
+          # পাইথন ২ এর বিকল্প ও অটোমেশন (আধুনিক উবুন্টুর জন্য)
+          sudo apt-get install -y python3
+          sudo ln -sf /usr/bin/python3 /usr/bin/python
+          
+      - name: Setup Toolchain
+        run: |
+          # টুলচেইন ক্লোন করা
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git -b lineage-18.1 gcc64
 
       - name: KernelSU Setup
         run: |
+          # KernelSU অটোমেটিক সেটআপ
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 
       - name: Build Kernel
         run: |
+          # এনভায়রনমেন্ট এক্সপোর্ট ও বিল্ড
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
-          chmod +x scripts/gcc-wrapper.py
+          
+          # মেকফাইল ও কনফিগ প্রিপারেশন
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
+          
+          # অটো-প্যাচিং (যদি কোনো কনফিগ এরর থাকে)
           sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
-          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olddefconfig
+          
+          # ফাইনাল বিল্ড
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
           
