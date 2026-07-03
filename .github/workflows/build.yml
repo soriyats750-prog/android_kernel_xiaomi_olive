@@ -9,7 +9,6 @@ jobs:
       - name: Setup Toolchain
         run: |
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git -b lineage-18.1 gcc64
-          echo "$GITHUB_WORKSPACE/gcc64/bin" >> $GITHUB_PATH
 
       - name: Setup Build Environment
         run: |
@@ -22,8 +21,9 @@ jobs:
       - name: Build Kernel
         run: |
           export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-android-
+          # সরাসরি ডাউনলোড করা ফোল্ডারের পাথ ব্যবহার করছি
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
           mkdir -p out
-          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- olive_defconfig
-          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc)
+          make O=out ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive_defconfig
+          make O=out ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
           
