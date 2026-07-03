@@ -22,7 +22,16 @@ jobs:
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
-          # সরাসরি মূল ডিরেক্টরিতে কনফিগারেশন এবং বিল্ড রান করছি
+          
+          # পারমিশন এরর এড়াতে স্ক্রিপ্টগুলোকে এক্সিকিউটেবল করা
+          chmod +x scripts/gcc-wrapper.py
+          
+          # কনফিগারেশন রান করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
+          
+          # কম্পাইলারের স্ট্যাক প্রটেক্টর সমস্যা এড়াতে কনফিগারেশনে পরিবর্তন
+          sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
+          
+          # বিল্ড শুরু করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
-        
+          
