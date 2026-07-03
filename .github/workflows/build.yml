@@ -6,12 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive # সাব-মডিউল ফাইলগুলো ডাউনলোড করার জন্য এটি বাধ্যতামূলক
 
       - name: Setup Build Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev
-          # পাইথন ২ এর পরিবর্তে পাইথন ৩ লিঙ্ক করা
           sudo ln -sf /usr/bin/python3 /usr/bin/python
 
       - name: Setup Toolchain
@@ -27,9 +28,11 @@ jobs:
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
           
-          # কনফিগারেশন এরর এড়াতে ডিফল্ট কনফিগ ব্যবহার
+          # সকল স্ক্রিপ্টকে পারমিশন দেওয়া
+          chmod -R +x scripts/
+          
+          # কনফিগ তৈরি এবং বিল্ড
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
           
-          # কনফিগ প্রম্পটগুলো এড়িয়ে স্বয়ংক্রিয়ভাবে বিল্ড করার কমান্ড
-          yes "" | make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE oldconfig
+          # 'oldconfig' এর পরিবর্তে সরাসরি বিল্ড রান করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
