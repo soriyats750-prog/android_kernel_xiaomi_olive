@@ -1,0 +1,14 @@
+name: Build Kernel
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: KernelSU Setup
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+      - name: Build Kernel
+        run: |
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- olive_defconfig 
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-android-
