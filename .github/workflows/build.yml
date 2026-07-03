@@ -12,9 +12,7 @@ jobs:
 
       - name: Setup Build Environment
         run: |
-          sudo apt-get update && sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev python2
-          # python2 কে ডিফল্ট হিসেবে লিঙ্ক করা
-          sudo ln -sf /usr/bin/python2 /usr/bin/python
+          sudo apt-get update && sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev python-is-python2
 
       - name: KernelSU Setup
         run: |
@@ -26,15 +24,11 @@ jobs:
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
           chmod +x scripts/gcc-wrapper.py
           
-          # কনফিগারেশন লোড করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
           
-          # কম্পাইলার স্ট্যাক প্রটেক্টর সমস্যা ঠিক করা
           sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
           
-          # olddefconfig রান করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olddefconfig
           
-          # বিল্ড শুরু করা
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
           
