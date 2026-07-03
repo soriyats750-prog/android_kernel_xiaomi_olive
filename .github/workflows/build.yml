@@ -2,7 +2,7 @@ name: Build Kernel
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - name: Setup Build Environment
@@ -14,7 +14,6 @@ jobs:
       - name: Build Kernel
         run: |
           export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          make O=out olive_defconfig
-          make -j$(nproc) O=out
-          
+          export CROSS_COMPILE=aarch64-linux-android-
+          make olive_defconfig
+          make -j$(nproc)
