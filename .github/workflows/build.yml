@@ -5,15 +5,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Build Environment
         run: |
           sudo apt-get update && sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev
+
       - name: KernelSU Setup
         run: |
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+
       - name: Build Kernel
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-android-
           make olive_defconfig
           make -j$(nproc)
+          
