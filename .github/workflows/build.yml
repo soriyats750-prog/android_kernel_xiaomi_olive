@@ -22,8 +22,7 @@ jobs:
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
-          mkdir -p out
-          # এখানে KBUILD_OUTPUT দিয়ে কার্নেলকে সোর্সের লোকেশন চিনিয়ে দিচ্ছি
-          make O=out ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive_defconfig
-          make O=out ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
+          # O=out সরিয়ে দিয়ে সরাসরি বিল্ড কমান্ড দিচ্ছি
+          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive_defconfig
+          make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
           
