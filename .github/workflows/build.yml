@@ -3,7 +3,6 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    # অ্যান্ড্রয়েড কার্নেল বিল্ডের জন্য লিনাক্স রানার বাধ্যতামূলক
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -15,8 +14,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git bc bison build-essential ccache curl flex g++-multilib gcc-multilib clang libxml2-utils lzop make libssl-dev libncurses5-dev
-          
-          # পাইথন ২ এর প্রয়োজনীয়তা মেটানোর জন্য লিঙ্ক তৈরি
           sudo ln -sf /usr/bin/python3 /usr/bin/python
           sudo ln -sf /usr/bin/python3 /usr/bin/python2
 
@@ -30,19 +27,19 @@ jobs:
 
       - name: Build Kernel
         run: |
-          # এনভায়রনমেন্ট সেটআপ
           export ARCH=arm64
           export CROSS_COMPILE=$GITHUB_WORKSPACE/gcc64/bin/aarch64-linux-android-
-          
-          # ফাইল পারমিশন ঠিক করা
           chmod -R +x scripts/
           
-          # কনফিগারেশন জেনারেট করা
+          # ১. বেসিক কনফিগ তৈরি
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olive-perf_defconfig
           
-          # স্ট্যাক প্রটেক্টর এরর (Compile error) দূর করার জন্য কনফিগ প্যাচ
+          # ২. স্ট্যাক প্রটেক্টর অফ করা
           sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
           sed -i 's/CONFIG_CC_STACKPROTECTOR_REGULAR=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' .config
           
-          # বিল্ড কমান্ড (সব প্রসেসর কোর ব্যবহার করে)
+          # ৩. নতুন কনফিগ আপডেট করা (কোনো প্রম্পট বা প্রশ্ন ছাড়াই)
+          yes "" | make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE olddefconfig
+          
+          # ৪. ফাইনাল বিল্ড
           make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(nproc)
